@@ -403,6 +403,24 @@ void aw_set_sctlr(feldev_handle *dev, soc_info_t *soc_info,
 }
 
 /*
+ * Issue a "smc #0" instruction. This brings a SoC booted in "secure boot"
+ * state from the default non-secure FEL into secure FEL.
+ * This crashes on devices using "non-secure boot", as the BROM does not
+ * provide a handler address in MVBAR.
+ */
+void aw_do_smc(feldev_handle *dev)
+{
+	soc_info_t *soc_info = dev->soc_info;
+	uint32_t arm_code[] = {
+		htole32(0xe1600070), /* smc	#0	*/
+		htole32(0xe12fff1e), /* bx	lr	*/
+	};
+
+	aw_fel_write(dev, arm_code, soc_info->scratch_addr, sizeof(arm_code));
+	aw_fel_execute(dev, soc_info->scratch_addr);
+}
+
+/*
  * Reconstruct the same MMU translation table as used by the A20 BROM.
  * We are basically reverting the changes, introduced in newer SoC
  * variants. This works fine for the SoC variants with the memory
@@ -994,6 +1012,7 @@ void usage(const char *cmd) {
 		"	dump address length		Binary memory dump\n"
 		"	exe[cute] address		Call function address\n"
 		"	reset64 address			RMR request for AArch64 warm boot\n"
+		"	smc				issue smc #0 instruction\n"
 		"	memmove dest source size	Copy <size> bytes within device memory\n"
 		"	readl address			Read 32-bit value from device memory\n"
 		"	writel address value		Write 32-bit value to device memory\n"
@@ -1127,6 +1146,8 @@ int main(int argc, char **argv)
 			aw_fel_print_sid(handle, false);
 		} else if (strcmp(argv[1], "sid-registers") == 0) {
 			aw_fel_print_sid(handle, true); /* enforce register access */
+		} else if (strcmp(argv[1], "smc") == 0) {
+			aw_do_smc(handle);
 		} else if (strcmp(argv[1], "write") == 0 && argc > 3) {
 			skip += 2 * file_upload(handle, 1, argc - 2, argv + 2,
 					pflag_active ? progress_bar : NULL);
