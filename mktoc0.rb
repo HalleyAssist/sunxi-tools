@@ -137,7 +137,7 @@ class TOC0
 
 		main_header = pack_header(@items.length, total_length)
 
-		checksum = (main_header + headers + data).unpack('V*').sum % 2 ** 32
+		checksum = (main_header + headers + data).unpack('V*').reduce(:+) % 2 ** 32
 		main_header = pack_header(@items.length, total_length, checksum)
 
 		headers = (main_header + headers).ljust(header_len, "\0")
