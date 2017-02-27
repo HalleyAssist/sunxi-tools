@@ -474,11 +474,87 @@ int get_boot_device(void)
 	return BOOT_DEVICE_UNK;
 }
 
+static char nibble_to_hex(unsigned char byte)
+{
+	switch (byte) {
+	default:
+	case 0x0:
+		return '0';
+	case 0x1:
+		return '1';
+	case 0x2:
+		return '2';
+	case 0x3:
+		return '3';
+	case 0x4:
+		return '4';
+	case 0x5:
+		return '5';
+	case 0x6:
+		return '6';
+	case 0x7:
+		return '7';
+	case 0x8:
+		return '8';
+	case 0x9:
+		return '9';
+	case 0xa:
+		return 'a';
+	case 0xb:
+		return 'b';
+	case 0xc:
+		return 'c';
+	case 0xd:
+		return 'd';
+	case 0xe:
+		return 'e';
+	case 0xf:
+		return 'f';
+	}
+}
+
+static inline void uart0_put_hex(unsigned int hex)
+{
+	int i;
+
+	for (i = 0; i < 8; i++) {
+		uart0_putc(nibble_to_hex((hex & 0xf0000000)>>28));
+		hex <<= 4;
+	}
+}
+
+static void secure_peripherals_test(void)
+{
+	if (!soc_is_a64())
+		return;
+
+	uart0_puts("Checking the current mode ... ");
+	if (readl(0x40004) == 0) {
+		uart0_puts("non-secure (please run 'sunxi-fel smc' on toc0-enabled devices).\n");
+		return;
+	}
+	uart0_puts("secure.\n");
+
+	uart0_puts("Switching to non-secure ... ");
+	asm volatile ("MCR p15,0,%0,c1,c1,0" :: "r" (1));
+	asm volatile ("dsb");
+	asm volatile ("isb");
+
+	uart0_puts("done.\n");
+	uart0_puts("Checking peripherals security ... ");
+	if (readl(0x40004) != 0)
+		uart0_puts("SRAM A2 is accessible (this is BAD).\n");
+	else
+		uart0_puts("SRAM A2 is not accessible (this is GOOD).\n");
+}
+
 int main(void)
 {
 	soc_detection_init();
 	gpio_init();
 	uart0_init();
+
+	secure_peripherals_test();
 
 	uart0_puts("\nHello from ");
 	if (soc_is_a10())
