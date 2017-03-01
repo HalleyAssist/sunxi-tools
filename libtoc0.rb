@@ -138,4 +138,13 @@ class TOC0
 	def pack_header(num_items, length, checksum = 0x5F0A6C39)
 		[ 'TOC0.GLH', 0x89119800, checksum, 0, 0, num_items, length, 0, 0, 0, 'MIE;' ].pack('a8V9a4')
 	end
+
+	def self.mktoc0(privkey_pem, code, load_addr)
+		key = OpenSSL::PKey::RSA.new(privkey_pem)
+		cert = Certificate.new(key, OpenSSL::Digest::SHA256.digest(code))
+		toc0_cert = TOC0Item.new(0x010101, cert.to_der, TOC0Item::CERTIFICATE)
+		toc0_code = TOC0Item.new(0x010202, code, TOC0Item::CODE, load_addr)
+		toc0 = TOC0.new( [ toc0_cert, toc0_code ] )
+		toc0.to_s
+	end
 end

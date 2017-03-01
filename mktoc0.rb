@@ -24,14 +24,6 @@ if ARGV.length < 3
 	exit false
 end
 
-key = OpenSSL::PKey::RSA.new(File.read(ARGV[0]))
-code = File.binread(ARGV[1])
-
-cert = Certificate.new(key, OpenSSL::Digest::SHA256.digest(code))
-
-toc0_cert = TOC0Item.new(0x010101, cert.to_der, TOC0Item::CERTIFICATE)
-toc0_code = TOC0Item.new(0x010202, code, TOC0Item::CODE, 0x0)
-
-toc0 = TOC0.new( [ toc0_cert, toc0_code ] )
-
-File.binwrite(ARGV[2], toc0.to_s)
+File.binwrite(ARGV[2], TOC0::mktoc0(File.read(ARGV[0]),
+                                    File.binread(ARGV[1]),
+                                    0x0))
