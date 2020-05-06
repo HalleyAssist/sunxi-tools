@@ -97,4 +97,4 @@ transformed_code = [0xEA000000 + (egon_spl_size + 4 - 8) / 4].pack("L<") +
                    code.byteslice(0, chunk1_size) +
                    toc0_fixup_stub.pack("L<*")
 
-File.binwrite(ARGV[1], TOC0::mktoc0(privkey_pem, transformed_code, load_base + chunk1_size - 4))
+File.binwrite(ARGV[2], TOC0::mktoc0(privkey_pem, transformed_code, load_base + chunk1_size - 4))
