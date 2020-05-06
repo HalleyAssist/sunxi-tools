@@ -15,44 +15,18 @@
 require './libtoc0.rb'
 
 # Just some private key, it does not matter which one
-privkey_pem = "-----BEGIN RSA PRIVATE KEY-----
-MIIEogIBAAKCAQEAoCHF/JtILTDfaHD41b2AwIv21X84mH05fMLGSoeL9w3R8BYE
-ca8iUhebTeDoGInRRW6yVfLRSYQK83ZEURwzp+2r/V7HbsC1BeFfHQjff6Ko+GTk
-P1e1fB+efDjQS9Z5lNoGDRETHcfEa8pUUz3qHjD0JWwQomz/EjWFwg2kkq8MM63D
-ToDZZLTacvSPrOHkX+BHaLxFQjYKAbcM1FNMtGDHeN29s+1ItTv3A+3tliy5OT+U
-GKzSN9pWU+KtSdzjyIPB95d2kx4ZKjaNH1aXAWGoYFjsmCXe3xM/c7k1J3tgan5Q
-IMKObNA8uEo3JGODFzp4+r9tUOYc0NojU1motwIDAQABAoIBAEA+bIU081cWFXt8
-X4i5F4+oV6Y9/UHIc6jnJ9C84t2CUOjGnI/TmKxgxjEPe25k1G3LxIaQ/YBGFnKo
-zy3PZ7YGt4rWXKLFc5rhWVx3s9ssMig9qgjzsl8S/G2QCZlzeaHLesQBRq8a92Xb
-bctburLUJw9gdKgFnKv8hyZcfNtP9sPOe6vsTmsTnSQ/9VjkAkaEdqSQWLir3eR/
-WZS7z/tvIiWdv7B+255xtSLq2GdNdQofFhQxv1ME9ZPEXQiSatFYKeyg7Gnp2cUY
-QetrtAclSJsJwpNaXAHm3MHhOYsEudpjp8VMM5EW1/MdIphxDvUI53iYqMPmejli
-y1yWGPkCgYEA0TqFEhySXnLlfBZ9nWUVKudkeWpcVHH0y12IJqpat5SQ08N86g9Z
-nwqB2TxpjN5TRh00rr/W58Oglof/DaJ8WIWyJj81NZ9vnKIs/f0zONXnizd7/LRe
-Vrtu8+/rpcBlf+/9/XK7Wkaws1hubAKPTmbkmXndmfTLjE+1EYHCX7MCgYEAw+2b
-8AotjK49J4vhTSbtETrOTMV+oIvSTWNz+nGyC3pZqwxG4spWzxc/ANOtlsh7CDoi
-+1u9HzBUp6cbAaRTQnvG7z3LO0Rz09kmurT/FeXUS49xSPybou5seDeikdgadElC
-WVmGoqyPUfl9KH+4gHTxzowlWp9hUWJvmD70sO0CgYBg5kla6gCf3XaK0Z+7lWUI
-ScIuuSOpuF03EkpMHfmFrDim2pKvlAxdq/AXO/NmWlEW18/eXtqY2/EzxihJmEce
-eEzZicyK2RxH3pQXzXw7hlWGFFxH3QEUChqIv0TTrxdS+UMYblp2pOaRKRN60nSs
-Str0eYw4ETdz9DZXtVDgIQKBgFJzHEsgTVjFPhD1SWOJPPwiLgyak5YGIQLWFklP
-LSitXSyg5verRGqzkpzLd2JbjYLBzFTQnz6PvSAsLy46s5rnsaid7XdMcB23ZRfu
-8OWLKRJ/E6IuQ2SGRvk0GGKdeUx0Q8qL5R9x1IIfpm6ziLXuAI/15AZFydNQxDti
-SuBlAoGABra08R8SBr2EfwCiBjeVBZidhlOL3et4WttxoXaF5FIHlXKLEzKW4JoJ
-GArGGx6nozCZDLJ4fRGCeK9kCZQF2BP0z8BbZzT0fZa57M8QjgETN9qAR5ODY5U0
-Ijh4J0lwv4V7vPvNkoeCU9OUUi7C9LBy5O79kyTIkro/FtPa+X4=
------END RSA PRIVATE KEY-----"
+privkey_pem = File.read(ARGV[1])
 
-if ARGV.length < 2
-	puts "Usage: #{$PROGRAM_NAME} input_file output_file [spl_addr]"
+if ARGV.length < 3
+	puts "Usage: #{$PROGRAM_NAME} input_file private_key_file output_file [spl_addr]"
 	exit false
 end
 
 # Use SRAM A2 by default (and autodetect SRAM A1 address)
 load_base = 0x44000
 
-if ARGV[2]
-	load_base = ARGV[2].to_i(16)
+if ARGV[3]
+	load_base = ARGV[3].to_i(16)
 	if (load_base != 0x0) && (load_base != 0x10000)
 		abort "'spl_addr' argument must be either 0x0 or 0x10000."
 	end
